@@ -111,6 +111,12 @@ class Actions:
             print(f"Directions possibles depuis ici : {', '.join(game.player.current_room.exits.keys())}\n")
             return False
 
+        # Vérifier si la direction existe dans les exits
+        if direction not in game.player.current_room.exits:
+            print(f"\nImpossible d'aller dans cette direction.\n")
+            print(f"Directions possibles depuis ici : {', '.join(game.player.current_room.exits.keys())}\n")
+            return False
+
         # Vérifier si la direction mène à une room None (game over ou chemin bloqué)
         if game.player.current_room.exits[direction] is None:
             if direction == "FENETRE":
@@ -119,7 +125,7 @@ class Actions:
                 print("="*50)
                 print("Vous sautez par la fenêtre et tombez de deux étages...")
                 print("La chute vous brise les jambes. Des orcs vous achèvent au sol.")
-                print("⛔ Parfois, la bravoure n'est que de l'imprudence.")
+                print("✗ Parfois, la bravoure n'est que de l'imprudence.")
                 print("="*50)
                 game.finished = True
             elif direction == "DROITE":
@@ -128,7 +134,7 @@ class Actions:
                 print("="*50)
                 print("Vous tombez nez à nez avec un orc massif...")
                 print("Sa hache s'abat sur vous avant même que vous puissiez réagir.")
-                print("⛔ L'observation avant l'action aurait été plus sage.")
+                print("✗ L'observation avant l'action aurait été plus sage.")
                 print("="*50)
                 game.finished = True
             else:
@@ -220,7 +226,7 @@ class Actions:
         print("\nDirections possibles :")
         print(" - Cardinales : N, S, E, O (ou NORD, SUD, EST, OUEST)")
         print(" - Verticales : U, D (ou HAUT, BAS, MONTER, DESCENDRE)") 
-        print(" - Spéciales : PORTE, FENETRE, GAUCHE, DROITE, etc.")
+        print(" - Spéciales : PORTE, FENETRE, GAUCHE, DROITE, FUIR, etc.")
         print("\nNavigation :")
         print(" - 'back' pour revenir en arrière")
         print(" - 'history' pour voir votre parcours")
@@ -480,9 +486,20 @@ class Actions:
         current_room = player.current_room
         enemy_name = list_of_words[1].lower()
         
+        # Pour la scène spéciale de la rencontre ORC
+        if current_room.name == "Rencontre Fatale":
+            print("\n" + "="*50)
+            print("COMBAT CONTRE UN ORC MASSIF")
+            print("="*50)
+            print("\nVous n'êtes pas prêt pour affronter cet orc seul !")
+            print("Vous devriez fuir tant que vous le pouvez...")
+            print("Tapez 'back' pour vous échapper de ce combat impossible !")
+            print("="*50)
+            return False
+        
         # Vérifier si le joueur a choisi une voie
         if not player.chosen_path:
-            print("\n❌ Vous devez d'abord choisir une voie (arc, épée ou magie) avant de combattre !")
+            print("\nⓘ Vous devez d'abord choisir une voie (arc, épée ou magie) avant de combattre !")
             return False
         
         # Vérifier si l'ennemi existe dans la pièce
@@ -517,3 +534,33 @@ class Actions:
             # Tour de l'ennemi
             enemy_damage = enemy.calculate_damage()
             damage_taken = player.defend(enemy_damage)
+            print(f"{enemy.name} vous inflige {damage_taken} dégâts !")
+            
+            if not player.is_alive():
+                break
+                
+            combat_round += 1
+        
+        # Résultat du combat
+        if enemy.is_alive():
+            print("\n" + "="*50)
+            print("DÉFAITE")
+            print("="*50)
+            print("Vous avez été vaincu...")
+            game.finished = True
+            return False
+        else:
+            print("\n" + "="*50)
+            print("VICTOIRE")
+            print("="*50)
+            print(f"Vous avez vaincu {enemy.name} !")
+            
+            # Récupérer les récompenses
+            loot = enemy.drop_loot()
+            player.gold += loot["gold"]
+            print(f"Vous avez gagnéé {loot['gold']} pièces d'or et {loot['experience']} XP !")
+            
+            # Retirer l'ennemi de la pièce
+            current_room.remove_enemy(enemy_name)
+            
+            return True

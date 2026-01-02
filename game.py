@@ -135,7 +135,7 @@ class Game:
         # Connecter les pièces de l'Acte 1
         self.rooms["CHAMBRE_BRULANTE"].exits = {
             "PORTE": self.rooms["RUE_PRINCIPALE"],
-            "FENETRE": None # Game over
+            "FENETRE": None
         }
         
         self.rooms["RUE_PRINCIPALE"].exits = {
@@ -150,10 +150,7 @@ class Game:
             "RETOUR": self.rooms["RUE_PRINCIPALE"]
         }
         
-        self.rooms["RENCONTRE_ORC"].exits = {
-            "COMBATTRE": None, # À implémenter
-            "FUIR": self.rooms["ECOULEMENT"]
-        }
+        self.rooms["RENCONTRE_ORC"].exits = {}
         
         self.rooms["ECOULEMENT"].exits = {
             "RETOUR": self.rooms["RUE_PRINCIPALE"]
@@ -175,7 +172,7 @@ class Game:
         
         self.rooms["CLAIRIERE_ADIEU"].exits = {
             "RETOUR": self.rooms["CAMP_MENTORS"],
-            "VENGEANCE": None # Transition vers Acte 3
+            "VENGEANCE": None
         }
         
         # Ajouter des objets dans certaines pièces
@@ -238,12 +235,14 @@ class Game:
             "poser": Command("poser", " - Déposer un objet", Actions.drop, 1),
             "check": Command("check", " - Vérifier votre inventaire et stats", Actions.check, 0),
             "inventaire": Command("inventaire", " - Voir l'inventaire", Actions.check, 0),
-            "stats": Command("stats", " - Voir vos statistiques", self.show_stats, 0),
+            "stats": Command("stats", " - Voir vos statistiques", Actions.check, 0),
             "fight": Command("fight", " - Combattre un ennemi", Actions.fight, 1),
             "combattre": Command("combattre", " - Combattre", Actions.fight, 1),
             "talk": Command("talk", " - Parler à un PNJ", self.talk_to_character, 1),
             "parler": Command("parler", " - Parler à un PNJ", self.talk_to_character, 1),
-            "debug": Command("debug", " - Mode debug (affiche toutes les infos)", self.debug_mode, 0)
+            "debug": Command("debug", " - Mode debug (affiche toutes les infos)", self.debug_mode, 0),
+            "fuir": Command("fuir", " - Fuir une situation dangereuse", Actions.go, 1),
+            "flee": Command("flee", " - Flee a dangerous situation", Actions.go, 1)
         }
         
     def show_stats(self, list_of_words=None, number_of_parameters=0):
