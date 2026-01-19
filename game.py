@@ -10,6 +10,7 @@ from player import Player
 from command import Command
 from character import Character, get_character, move_all_characters
 from actions import Actions
+from quest import QuestManager  # NOUVEAU : Import du gestionnaire de quêtes
 
 class Game:
     """Classe principale qui gère l'état global du jeu"""
@@ -22,13 +23,14 @@ class Game:
         self.commands = {}
         self.current_act = 1
         self.turn_count = 0
+        self.quest_manager = None  # NOUVEAU : Gestionnaire de quêtes
         
         # Directions autorisées dans le jeu
         self.allowed_directions = [
             "N", "S", "E", "O", "U", "D", # Cardinales
             "PORTE", "FENETRE", "GAUCHE", "DROITE", "CENTRE", # Spéciales
             "FORET", "ENTRAINEMENT", "VENGEANCE", "ENTRER", "SORTIR",
-            "RETOUR", "CONTINUER", "INFILTRATION", "ASSAUT"
+            "RETOUR", "CONTINUER", "INFILTRATION", "ASSAUT", "VALLEE"
         ]
         
         # Variables de debug
@@ -40,6 +42,11 @@ class Game:
         
         # Création du joueur
         self.create_player()
+        
+        # NOUVEAU : Initialiser le gestionnaire de quêtes
+        self.quest_manager = QuestManager(self.player)
+        # Démarrer la première quête automatiquement
+        self.quest_manager.start_quest("fuite_vers_camp")
         
         # Création du monde
         self.create_world()
@@ -99,7 +106,9 @@ class Game:
         
         self.rooms["RENCONTRE_ORC"] = Room(
             "Rencontre Fatale",
-            "Un orc massif vous bloque le chemin. Ses yeux brûlent de haine."
+            "Un orc massif vous bloque le chemin. Ses yeux brûlent de haine. "
+            "Vous devez fuir pour sauver votre vie !"
+            "⚠️ INSTRUCTION: Tapez 'back' pour vous échapper !"
         )
         
         self.rooms["ECOULEMENT"] = Room(
@@ -113,7 +122,7 @@ class Game:
             "ACTE 1 TERMINÉ - 5 ans plus tard..."
         )
         
-        # ACTE 2 - ENTRAÎNEMENT (3 pièces)
+        # ACTE 2 - ENTRAÎNEMENT (4 pièces)
         self.rooms["CAMP_MENTORS"] = Room(
             "Camp des Mentors",
             "5 ans ont passé. Lyra et Valerius vous ont entraîné. "
@@ -130,6 +139,26 @@ class Game:
             "Clairière des Adieux",
             "Un endroit paisible où vous avez fait la promesse "
             "de ne jamais chercher la vengeance... une promesse brisée."
+        )
+        
+        self.rooms["CHEMIN_VALLEE_DEMONIAQUE"] = Room(
+            "Chemin de la Vallée Démoniaque",
+            "Un sentier sinueux qui s'enfonce dans les terres sombres. "
+            "L'air devient froid et suffocant. Des cris lointains résonnent "
+            "à travers la vallée. Des ombres étranges dansent entre les arbres. "
+            "Vous sentez que vous vous approchez du siège du pouvoir de Morgrath..."
+        )
+        
+        self.rooms["ANTRE_MORGRATH"] = Room(
+            "Antre de Morgrath",
+            "Vous vous trouvez enfin face à face avec votre destin. "
+            "L'antre de Morgrath s'étend devant vous, une caverne immense aux murs "
+            "de pierre noire suintant d'une énergie maléfique. Des flammes vertes "
+            "dansent sur le sol. Au loin, assis sur un trône de crânes, Morgrath "
+            "vous observe. Ses yeux rouges brillent d'une haine millénaire. "
+            "Le moment tant attendu est enfin arrivé. Votre vendetta prend fin ici. "
+            "\n\n⚔️ COMBAT FINAL IMMINENT ⚔️\n"
+            "Utilisez la commande 'fight morgrath' pour affronter le Roi Démon !"
         )
         
         # Connecter les pièces de l'Acte 1
@@ -163,7 +192,8 @@ class Game:
         # Connecter les pièces de l'Acte 2
         self.rooms["CAMP_MENTORS"].exits = {
             "ENTRAINEMENT": self.rooms["ZONE_ENTRAINEMENT"],
-            "FORET": self.rooms["CLAIRIERE_ADIEU"]
+            "FORET": self.rooms["CLAIRIERE_ADIEU"],
+            "VALLEE": self.rooms["CHEMIN_VALLEE_DEMONIAQUE"]
         }
         
         self.rooms["ZONE_ENTRAINEMENT"].exits = {
@@ -175,11 +205,23 @@ class Game:
             "VENGEANCE": None
         }
         
+        self.rooms["CHEMIN_VALLEE_DEMONIAQUE"].exits = {
+            "RETOUR": self.rooms["CAMP_MENTORS"],
+            "CONTINUER": self.rooms["ANTRE_MORGRATH"]
+        }
+        
+        self.rooms["ANTRE_MORGRATH"].exits = {
+            "RETOUR": self.rooms["CHEMIN_VALLEE_DEMONIAQUE"]
+        }
+        
         # Ajouter des objets dans certaines pièces
         self.add_initial_items()
         
         # Ajouter des PNJ
         self.add_initial_characters()
+        
+        # Ajouter des ennemis
+        self.add_initial_enemies()
         
         print(f"Monde créé avec {len(self.rooms)} pièces.")
         
@@ -213,6 +255,21 @@ class Game:
         if valerius:
             valerius.current_room = self.rooms["CAMP_MENTORS"]
             self.rooms["CAMP_MENTORS"].add_character("valerius", valerius)
+        
+        # Ajouter Morgrath dans son antre
+        morgrath = get_character("morgrath")
+        if morgrath:
+            morgrath.current_room = self.rooms["ANTRE_MORGRATH"]
+            self.rooms["ANTRE_MORGRATH"].add_character("morgrath", morgrath)
+    
+    def add_initial_enemies(self):
+        """Ajoute les ennemis initiaux dans le monde"""
+        from enemy import EnemyCatalog
+        
+        # Ajouter Morgrath comme ennemi dans son antre
+        morgrath_enemy = EnemyCatalog.create_enemy("MORGRATH")
+        if morgrath_enemy:
+            self.rooms["ANTRE_MORGRATH"].add_enemy("morgrath", morgrath_enemy)
             
     def setup_commands(self):
         """Configure toutes les commandes disponibles"""
@@ -238,45 +295,33 @@ class Game:
             "stats": Command("stats", " - Voir vos statistiques", Actions.check, 0),
             "fight": Command("fight", " - Combattre un ennemi", Actions.fight, 1),
             "combattre": Command("combattre", " - Combattre", Actions.fight, 1),
-            "talk": Command("talk", " - Parler à un PNJ", self.talk_to_character, 1),
-            "parler": Command("parler", " - Parler à un PNJ", self.talk_to_character, 1),
+            "talk": Command("talk", " - Parler à un PNJ", Actions.talk, 1),
+            "parler": Command("parler", " - Parler à un PNJ", Actions.talk, 1),
+            "choose": Command("choose", " - Choisir votre voie (arc, épée, magie)", Actions.choose, 1),
+            "choisir": Command("choisir", " - Choisir votre voie", Actions.choose, 1),
             "debug": Command("debug", " - Mode debug (affiche toutes les infos)", self.debug_mode, 0),
             "fuir": Command("fuir", " - Fuir une situation dangereuse", Actions.go, 1),
-            "flee": Command("flee", " - Flee a dangerous situation", Actions.go, 1)
+            "flee": Command("flee", " - Flee a dangerous situation", Actions.go, 1),
+            # NOUVEAU : Commandes de quêtes
+            "quests": Command("quests", " - Voir vos quêtes", self.show_quests, 0),
+            "quetes": Command("quetes", " - Voir vos quêtes", self.show_quests, 0),
+            "journal": Command("journal", " - Ouvrir le journal de quêtes", self.show_quests, 0),
         }
         
     def show_stats(self, list_of_words=None, number_of_parameters=0):
         """Affiche les statistiques du joueur (commande stats)"""
         print(self.player.get_stats_string())
         return True
-        
-    def talk_to_character(self, list_of_words, number_of_parameters):
-        """Parler à un PNJ (à intégrer plus tard dans actions.py)"""
-        if len(list_of_words) != 2:
-            print("\nUsage: talk <nom_du_pnj>")
-            return False
-            
-        character_name = list_of_words[1].lower()
-        current_room = self.player.current_room
-        
-        if character_name not in current_room.characters:
-            print(f"\nLe PNJ '{character_name}' n'est pas dans cette pièce.")
-            if current_room.characters:
-                print(f"PNJ présents: {', '.join(current_room.characters.keys())}")
-            return False
-            
-        character = current_room.characters[character_name]
-        dialogue = character.get_dialogue()
-        
-        print(f"\n=== Conversation avec {character.name} ===")
-        print(f"{character.name}: {dialogue}")
-        print(f"Type: {character.character_type}")
-        
-        if character.quest_related:
-            print(f"Quête associée: {character.quest_related}")
-            
+    
+    # NOUVEAU : Méthode pour afficher les quêtes
+    def show_quests(self, list_of_words=None, number_of_parameters=0):
+        """Affiche les quêtes actives"""
+        if self.quest_manager:
+            print(self.quest_manager.get_all_quests_string())
+        else:
+            print("\nAucune quête disponible pour le moment.\n")
         return True
-        
+    
     def debug_mode(self, list_of_words=None, number_of_parameters=0):
         """Mode debug - affiche toutes les informations"""
         if not self.DEBUG:
@@ -300,6 +345,12 @@ class Game:
         print(f"Sorties: {list(room.exits.keys())}")
         print(f"Objets: {list(room.inventory.keys())}")
         print(f"PNJ: {list(room.characters.keys())}")
+        
+        # NOUVEAU : Info quêtes
+        if self.quest_manager:
+            print(f"\nQUÊTES ACTIVES: {len(self.quest_manager.active_quests)}")
+            for quest in self.quest_manager.active_quests:
+                print(f"  - {quest.title}: {len(quest.completed_objectives)}/{len(quest.objectives)} objectifs")
         
         # Commandes disponibles
         print(f"\nCOMMANDES DISPONIBLES ({len(self.commands)}):")
@@ -338,7 +389,13 @@ class Game:
                 return False
                 
             # Exécuter la commande
-            return command.action(self, words, command.number_of_parameters)
+            success = command.action(self, words, command.number_of_parameters)
+            
+            # NOUVEAU : Après une action réussie, vérifier les déclencheurs de quêtes
+            if success and self.player.current_room and self.quest_manager:
+                self.quest_manager.check_quest_triggers(self.player.current_room.name)
+            
+            return success
         else:
             print(f"\nCommande inconnue: '{command_word}'")
             print("Tapez 'help' pour voir les commandes disponibles.")
@@ -410,6 +467,12 @@ class Game:
         print("="*50)
         print(f"Merci d'avoir joué à 'L'Héritage des Cendres', {self.player.name}!")
         print(f"Nombre de tours joués: {self.turn_count}")
+        
+        # NOUVEAU : Afficher les statistiques de quêtes
+        if self.quest_manager:
+            print(f"Quêtes terminées: {len(self.quest_manager.completed_quests)}")
+            print(f"Quêtes actives: {len(self.quest_manager.active_quests)}")
+        
         print("="*50)
         
     def save_game(self, filename="savegame.json"):

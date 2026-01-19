@@ -462,9 +462,12 @@ class Actions:
         
         return True
 
+    # REMPLACER LA MÉTHODE fight() EXISTANTE PAR CECI DANS actions.py
+
     def fight(game, list_of_words, number_of_parameters):
         """
         Engager un combat avec un ennemi dans la pièce.
+        Détecte si c'est Morgrath pour activer le combat spécial.
 
         Args:
             game (Game): The game object.
@@ -474,6 +477,7 @@ class Actions:
         Returns:
             bool: True if the command was executed successfully, False otherwise.
         """
+        import random
         
         l = len(list_of_words)
         # If the number of parameters is incorrect, print an error message and return False.
@@ -485,6 +489,11 @@ class Actions:
         player = game.player
         current_room = player.current_room
         enemy_name = list_of_words[1].lower()
+
+        # Vérifier si le joueur a choisi une voie
+        if not player.chosen_path:
+            print("\n⚠️ Vous devez d'abord choisir une voie (arc, épée ou magie) avant de combattre !")
+            return False
         
         # Pour la scène spéciale de la rencontre ORC
         if current_room.name == "Rencontre Fatale":
@@ -493,13 +502,9 @@ class Actions:
             print("="*50)
             print("\nVous n'êtes pas prêt pour affronter cet orc seul !")
             print("Vous devriez fuir tant que vous le pouvez...")
-            print("Tapez 'back' pour vous échapper de ce combat impossible !")
+            print("Cet orc vous écrase de sa présence...")
+            print("\n⚠️ INSTRUCTION: Tapez 'back' pour vous échapper !")
             print("="*50)
-            return False
-        
-        # Vérifier si le joueur a choisi une voie
-        if not player.chosen_path:
-            print("\nⓘ Vous devez d'abord choisir une voie (arc, épée ou magie) avant de combattre !")
             return False
         
         # Vérifier si l'ennemi existe dans la pièce
@@ -513,6 +518,11 @@ class Actions:
         
         enemy = current_room.enemies[enemy_name]
         
+        # COMBAT SPÉCIAL CONTRE MORGRATH
+        if enemy_name == "morgrath":
+            return Actions._fight_morgrath_combat(game, enemy, player, current_room)
+        
+        # COMBAT NORMAL CONTRE LES AUTRES ENNEMIS
         print("\n" + "="*50)
         print(f"⚔️ COMBAT CONTRE {enemy.name.upper()} ⚔️")
         print("="*50)
@@ -558,9 +568,312 @@ class Actions:
             # Récupérer les récompenses
             loot = enemy.drop_loot()
             player.gold += loot["gold"]
-            print(f"Vous avez gagnéé {loot['gold']} pièces d'or et {loot['experience']} XP !")
+            print(f"Vous avez gagné {loot['gold']} pièces d'or et {loot['experience']} XP !")
             
             # Retirer l'ennemi de la pièce
             current_room.remove_enemy(enemy_name)
             
             return True
+
+    
+    def _fight_morgrath_combat(game, enemy, player, current_room):
+        """Gère le combat spécial contre Morgrath avec deux phases"""
+        import random
+        
+        # Initialiser le compteur de rencontres si nécessaire
+        if not hasattr(player, 'morgrath_encounters'):
+            player.morgrath_encounters = 0
+        
+        player.morgrath_encounters += 1
+        
+        # PREMIÈRE RENCONTRE
+        if player.morgrath_encounters == 1:
+            print("\n" + "="*60)
+            print("⚔️ AFFRONTEMENT AVEC MORGRATH, LE ROI DÉMON ⚔️")
+            print("="*60)
+            print(f"\n{player.name}: Il est temps de mettre fin à cette folie !")
+            print(f"Morgrath: Enfin... tu es venu à ta ruine...\n")
+            
+            # Boucle de combat
+            combat_round = 1
+            while player.health > 0 and enemy.is_alive():
+                print(f"\n--- Round {combat_round} ---")
+                print(f"{player.name}: {player.health}/{player.max_health} PV")
+                print(f"{enemy.name}: {enemy.health}/{enemy.max_health} PV (Phase {enemy.phase})")
+                
+                # Tour du joueur
+                player_damage = player.attack(enemy)
+                print(f"🗡️ Vous infligez {player_damage} dégâts à {enemy.name} !")
+                
+                if not enemy.is_alive():
+                    break
+                    
+                # Tour de l'ennemi
+                enemy_damage = enemy.calculate_damage()
+                damage_taken = player.defend(enemy_damage)
+                print(f"{enemy.name} vous inflige {damage_taken} dégâts !")
+                
+                if not player.is_alive():
+                    break
+                    
+                combat_round += 1
+            
+            # Résultat de la première rencontre
+            print("\n" + "="*60)
+            print("PREMIÈRE RENCONTRE - ÉPUISEMENT")
+            print("="*60)
+            print("Morgrath vous écrase impitoyablement...")
+            print("Vous sombrez dans les ténèbres...")
+            print("\nMais une force étrange vous envahit...")
+            print("Vous sentez un pouvoir ancien s'éveiller en vous...")
+            print("="*60)
+            
+            # Réinitialiser pour la deuxième rencontre
+            enemy.health = enemy.max_health
+            enemy.phase = 1
+            enemy.base_damage = 28
+            player.health = player.max_health
+            
+            print(f"\n✨ Vous reprenez connaissance, rempli d'une énergie nouvelle...")
+            print("Morgrath se rapproche pour vous achever...")
+            print("C'est le moment de l'affrontement ultime !\n")
+            
+            return True
+        
+        # DEUXIÈME RENCONTRE - COMBAT FINAL
+        else:
+            print("\n" + "="*60)
+            print("🔥 AFFRONTEMENT FINAL - MORGRATH S'ÉVEILLE 🔥")
+            print("="*60)
+            
+            # 50% de chance de développer le pouvoir caché
+            develops_hidden_power = random.random() < 0.5
+            
+            if develops_hidden_power:
+                print("\n✨ UNE FORCE ANCIENNE S'ÉVEILLE EN VOUS ! ✨\n")
+                print("Vous sentez le pouvoir des anciens héros d'Alderwood...")
+                print("Lyra, Valerius, Thrain... leurs esprits vous guident...")
+                print("\n🌟 POUVOIR CACHÉ ACTIVÉ: HÉRITAGE DES CENDRES 🌟")
+                print("Vos attaques sont désormais DÉVASTANTES !\n")
+                
+                # Activer le pouvoir caché
+                player.hidden_power_active = True
+                player.hidden_power_multiplier = 12
+            else:
+                print("\n⚠️ Vous restez seul face à cette puissance écrasante...\n")
+                player.hidden_power_active = False
+            
+            print("Morgrath rugit avec rage, prêt pour l'affrontement ultime!\n")
+            
+            # Boucle de combat finale
+            combat_round = 1
+            while player.health > 0 and enemy.is_alive():
+                print(f"\n--- Round {combat_round} ---")
+                print(f"{player.name}: {player.health}/{player.max_health} PV")
+                if player.hidden_power_active:
+                    print("⭐ POUVOIR CACHÉ ACTIF ⭐")
+                print(f"{enemy.name}: {enemy.health}/{enemy.max_health} PV (Phase {enemy.phase})")
+                
+                # Tour du joueur avec pouvoir caché
+                if player.hidden_power_active:
+                    # Attaque amplifiée par le pouvoir caché
+                    base_damage = player.attack(enemy)
+                    amplified_damage = int(base_damage * player.hidden_power_multiplier)
+                    
+                    # Enlever les dégâts normaux et ajouter les amplifiés
+                    enemy.health += base_damage
+                    enemy.take_damage(amplified_damage)
+                    
+                    print(f"🌟 HÉRITAGE DES CENDRES ! 🌟")
+                    print(f"Vous infligez {amplified_damage} dégâts DÉVASTATEURS à {enemy.name} !")
+                else:
+                    player_damage = player.attack(enemy)
+                    print(f"🗡️ Vous infligez {player_damage} dégâts à {enemy.name} !")
+                
+                if not enemy.is_alive():
+                    break
+                    
+                # Tour de l'ennemi
+                enemy_damage = enemy.calculate_damage()
+                damage_taken = player.defend(enemy_damage)
+                print(f"{enemy.name} vous inflige {damage_taken} dégâts !")
+                
+                if not player.is_alive():
+                    break
+                    
+                combat_round += 1
+            
+            # Résultat du combat final
+            if enemy.is_alive():
+                print("\n" + "="*60)
+                print("DÉFAITE FINALE")
+                print("="*60)
+                print("Morgrath vous écrase définitivement...")
+                if player.hidden_power_active:
+                    print("Même l'héritage des anciens n'a pas suffi...")
+                print("Votre quête s'achève dans la défaite.")
+                print("="*60)
+                game.finished = True
+                return False
+            else:
+                print("\n" + "="*60)
+                print("🏆 VICTOIRE ÉCLATANTE 🏆")
+                print("="*60)
+                print(f"\n{player.name} a vaincu Morgrath, le Roi Démon !")
+                
+                if player.hidden_power_active:
+                    print("\n✨ L'héritage des cendres a prévalu ! ✨")
+                    print("Les esprits des anciens héros se manifestent autour de vous...")
+                    print("\nLyra: Tu as honoré notre mémoire...")
+                    print("Valerius: Alderwood est vengé...")
+                    print("Thrain: Repose en paix, dernier survivant...\n")
+                else:
+                    print("\nMalgré les odds, vous avez réussi !")
+                    print("Votre détermination a été plus forte que la magie noire de Morgrath.\n")
+                
+                print("Morgrath s'effondre, et son corps se désagrège en poussière...")
+                print("Les terres commencent à briller d'une lumière nouvelle...")
+                print("Alderwood est libre. La malédiction est levée.\n")
+                
+                # Récupérer les récompenses
+                loot = enemy.drop_loot()
+                player.gold += loot["gold"]
+                player.health = player.max_health
+                
+                print(f"Vous gagnez {loot['gold']} pièces d'or et {loot['experience']} XP !")
+                print("\n" + "="*60)
+                print("QUÊTE TERMINÉE - VICTOIRE FINALE!")
+                print("="*60)
+                
+                # Retirer Morgrath de la pièce
+                current_room.remove_enemy("morgrath")
+                
+                game.finished = True
+                return True
+
+    def talk(game, list_of_words, number_of_parameters):
+        """
+        Parler à un PNJ dans la pièce actuelle.
+
+        Args:
+            game (Game): The game object.
+            list_of_words (list): The list of words in the command.
+            number_of_parameters (int): The number of parameters expected by the command.
+
+        Returns:
+            bool: True if the command was executed successfully, False otherwise.
+        """
+        l = len(list_of_words)
+        # If the number of parameters is incorrect, print an error message and return False.
+        if l != number_of_parameters + 1:
+            command_word = list_of_words[0]
+            print(f"\nLa commande '{command_word}' prend 1 seul paramètre.\n")
+            return False
+            
+        character_name = list_of_words[1].lower()
+        current_room = game.player.current_room
+        
+        if character_name not in current_room.characters:
+            print(f"\nLe PNJ '{character_name}' n'est pas dans cette pièce.")
+            if current_room.characters:
+                print(f"PNJ présents: {', '.join(current_room.characters.keys())}")
+            return False
+            
+        character = current_room.characters[character_name]
+        dialogue = character.get_dialogue()
+        
+        print(f"\n=== Conversation avec {character.name} ===")
+        print(f"{character.name}: {dialogue}")
+        print(f"Type: {character.character_type}")
+        
+        # Dialogue spécial si Lyra est le mentor choisi
+        if character_name == "lyra" and current_room.name == "Camp des Mentors":
+            print(f"\nLyra vous regarde intensément...")
+            print(f"Lyra: Ton entraînement est presque terminé. Tu es prêt à choisir ta voie.")
+            print(f"Lyra: Arc, Épée ou Magie... quel chemin choisiras-tu ?")
+        
+        if character.quest_related:
+            print(f"Quête associée: {character.quest_related}")
+            
+        return True
+
+# AJOUTER CETTE NOUVELLE MÉTHODE À LA CLASSE Actions
+
+    def choose(game, list_of_words, number_of_parameters):
+        """
+        Choisir votre voie (Arc, Épée ou Magie)
+
+        Args:
+            game (Game): The game object.
+            list_of_words (list): The list of words in the command.
+            number_of_parameters (int): The number of parameters expected by the command.
+
+        Returns:
+            bool: True if the command was executed successfully, False otherwise.
+        """
+        
+        l = len(list_of_words)
+        # If the number of parameters is incorrect, print an error message and return False.
+        if l != number_of_parameters + 1:
+            command_word = list_of_words[0]
+            print(MSG1.format(command_word=command_word))
+            return False
+        
+        player = game.player
+        choice = list_of_words[1].upper()
+        
+        # Map des choix possibles
+        choice_map = {
+            "ARC": "ARC",
+            "BOW": "ARC",
+            "ARCHER": "ARC",
+            "ÉPÉE": "EPEE",
+            "EPEE": "EPEE",
+            "SWORD": "EPEE",
+            "WARRIOR": "EPEE",
+            "GUERRIER": "EPEE",
+            "MAGIE": "MAGIE",
+            "MAGIC": "MAGIE",
+            "MAGE": "MAGIE",
+            "SORCIER": "MAGIE"
+        }
+        
+        # Convertir le choix en format standard
+        path = choice_map.get(choice, None)
+        
+        if path is None:
+            print(f"\n⚠️  Voie inconnue: '{list_of_words[1]}'")
+            print("Voies disponibles:")
+            print(" - ARC (ou BOW, ARCHER)")
+            print(" - ÉPÉE (ou EPEE, SWORD, WARRIOR)")
+            print(" - MAGIE (ou MAGIC, MAGE)\n")
+            return False
+        
+        if player.chosen_path:
+            print(f"\n⚠️  Vous avez déjà choisi la voie: {player.chosen_path}")
+            print("Vous ne pouvez pas changer de voie!\n")
+            return False
+        
+        # Appliquer le choix de voie
+        player.choose_path(path)
+        
+        print("\n" + "="*60)
+        print(f"✨ VOIE CHOISIE: {path} ✨")
+        print("="*60)
+        
+        if path == "ARC":
+            print("\nVous avez choisi la voie de l'ARCHER!")
+            print("Avantages: Attaques à distance précises, chances de coup critique élevées")
+            print("Armes: Arc, Arbalète")
+        elif path == "EPEE":
+            print("\nVous avez choisi la voie du GUERRIER!")
+            print("Avantages: Attaques puissantes et directes, bonne défense")
+            print("Armes: Épée, Hache, Massue")
+        elif path == "MAGIE":
+            print("\nVous avez choisi la voie du MAGE!")
+            print("Avantages: Attaques magiques puissantes, effets spéciaux (brûlure, poison)")
+            print("Armes: Bâton, Grimoire, Cristal")
+        
+        print("\n🎯 Vous êtes maintenant prêt à affronter tous les ennemis!")
+        print("="*60 + "\n")
+        return True

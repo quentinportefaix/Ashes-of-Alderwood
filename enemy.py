@@ -47,11 +47,11 @@ class Enemy(ABC):
         """Représentation textuelle de l'ennemi"""
         health_percent = (self.health / self.max_health) * 100
         if health_percent > 70:
-            status = "✓"
+            status = "✅"
         elif health_percent > 30:
-            status = "⚠"
+            status = "⚠️"
         else:
-            status = "✗"
+            status = "❌"
         return f"{status} {self.name} ({self.health}/{self.max_health} PV)"
     
     def is_alive(self):
@@ -128,7 +128,7 @@ class Enemy(ABC):
                 self.is_burning = False
                 
         if self.is_stunned:
-            effects.append("💫 Étourdi")
+            effects.append("😵 Étourdi")
             self.is_stunned = False # Stun dure 1 tour
             
         return effects
@@ -197,7 +197,7 @@ class Goblin(Enemy):
             enemy_type="GOBELIN",
             experience=exp,
             gold_range=gold_range,
-            weakness={"FIRE": 0.25} +25% dégâts feu
+            weakness={"FIRE": 0.25}
         )
     
     def calculate_damage(self):
@@ -240,8 +240,8 @@ class Orc(Enemy):
             enemy_type="ORC",
             experience=exp,
             gold_range=gold_range,
-            resistance={"PHYSICAL": 0.15}, # -15% dégâts physiques
-            weakness={"MAGICAL": 0.20} # +20% dégâts magiques
+            resistance={"PHYSICAL": 0.15},
+            weakness={"MAGICAL": 0.20}
         )
     
     def calculate_damage(self):
@@ -289,10 +289,10 @@ class Troll(Enemy):
             experience=exp,
             gold_range=gold_range,
             resistance={"PHYSICAL": 0.25, "MAGICAL": 0.10},
-            weakness={"FIRE": 0.50} # Très faible au feu
+            weakness={"FIRE": 0.50}
         )
         
-        self.regeneration = 3 # PV régénérés par tour
+        self.regeneration = 3
     
     def calculate_damage(self):
         """Les trolls frappent lentement mais fort"""
@@ -340,7 +340,7 @@ class Boss(Enemy):
         )
         
         self.max_health = health
-        self.phase_health = int(health * phase_health) # PV à partir desquels la phase 2 commence
+        self.phase_health = int(health * phase_health)
         self.phase = 1
         self.special_attacks = special_attacks or []
         self.special_cooldown = 0
@@ -356,7 +356,7 @@ class Boss(Enemy):
         
         # Attaque spéciale si disponible
         if self.special_attacks and self.special_cooldown <= 0 and random.random() < 0.3:
-            self.special_cooldown = 3 # 3 tours de recharge
+            self.special_cooldown = 3
             return self.use_special_attack()
         
         # Attaque normale avec bonus si enragé
@@ -450,7 +450,7 @@ class ChefTroll(Boss):
                 "description": "Le troll frappe le sol avec une force titanesque !"
             },
             {
-                "name": "Regénération Frénétique",
+                "name": "Régénération Frénétique",
                 "damage": 0,
                 "description": "Le troll régénère rapidement ses blessures !",
                 "effect": "HEAL_50"
@@ -472,11 +472,11 @@ class ChefTroll(Boss):
         
         self.gold_range = (150, 250)
         self.experience = 200
-        self.regeneration = 5 # Régénère 5 PV par tour
+        self.regeneration = 5
 
 
 class Morgrath(Boss):
-    """Boss Final - Roi Démon"""
+    """Boss Final - Roi Démon - L'antagoniste principal du jeu"""
     
     def __init__(self):
         special_attacks = [
@@ -484,64 +484,123 @@ class Morgrath(Boss):
                 "name": "Vague de Corruption",
                 "damage": 20,
                 "description": "Une vague d'énergie démoniaque vous envahit !",
-                "effect": "POISON_10"
+                "effect": "POISON"
             },
             {
                 "name": "Flammes de la Haine",
                 "damage": 25,
                 "description": "Des flammes noires brûlent tout sur leur passage !",
-                "effect": "BURN_15"
+                "effect": "BURN"
             },
             {
                 "name": "Absorption d'Âme",
                 "damage": 15,
                 "description": "Morgrath absorbe votre vitalité !",
-                "effect": "DRAIN_30"
+                "effect": "DRAIN"
             },
             {
-                "name": "Apocalypse",
+                "name": "Apocalypse Démoniaque",
                 "damage": 40,
-                "description": "L'attaque ultime du Roi Démon !",
+                "description": "L'attaque ultime du Roi Démon ! Les cieux s'assombrissent !",
                 "effect": "STUN"
+            },
+            {
+                "name": "Légion d'Ombres",
+                "damage": 22,
+                "description": "Des créatures spectrales surgissent de l'obscurité !",
+                "effect": "POISON"
             }
         ]
         
         super().__init__(
             name="Morgrath, le Roi Démon",
-            health=200,
-            damage=22,
-            phase_health=0.25, # 4 phases à 200, 150, 100, 50 PV
+            health=250,
+            damage=28,
+            phase_health=0.5,
             special_attacks=special_attacks
         )
         
+        self.max_health = 250
         self.gold_range = (500, 1000)
         self.experience = 500
         self.phase = 1
-        self.phase_triggers = [150, 100, 50] # PV pour changer de phase
+        self.phase_triggers = [200, 150, 100]
+        self.enrage_threshold = 150
     
     def calculate_damage(self):
-        """Morgrath a 4 phases avec des attaques différentes"""
+        """Morgrath a plusieurs phases avec des attaques de plus en plus puissantes"""
         # Vérifier les changements de phase
         for i, trigger in enumerate(self.phase_triggers):
             if self.health <= trigger and self.phase < i + 2:
                 self.phase = i + 2
-                print(f"\n" + "="*50)
-                print(f"⚡ PHASE {self.phase} ! Morgrath devient plus puissant !")
-                print("="*50)
+                print(f"\n" + "="*60)
+                print(f"⚡ PHASE {self.phase} - MORGRATH INTENSIFIE SON ATTAQUE ! ⚡")
+                print("="*60)
                 # Augmenter les dégâts à chaque phase
-                self.base_damage += 5
+                self.base_damage += 8
+                
+                # Messages spéciaux par phase
+                if self.phase == 2:
+                    print("Morgrath: Enfin, un adversaire qui mérite mon attention !")
+                elif self.phase == 3:
+                    print("Morgrath: Tu oses me défier dans mon propre domaine ?!")
+                elif self.phase == 4:
+                    print("Morgrath: Prépare-toi à connaître la véritable puissance !")
         
-        # Chance d'attaque spéciale plus élevée
-        if self.special_attacks and self.special_cooldown <= 0 and random.random() < 0.4:
+        # Chance d'attaque spéciale augmente selon la phase
+        special_chance = 0.3 + (self.phase * 0.1)
+        
+        if self.special_attacks and self.special_cooldown <= 0 and random.random() < special_chance:
             self.special_cooldown = 2
             return self.use_special_attack()
         
         # Attaque normale avec bonus de phase
         damage = random.randint(self.base_damage - 3, self.base_damage + 8)
-        damage = int(damage * (1 + (self.phase - 1) * 0.2)) # +20% par phase
+        damage = int(damage * (1 + (self.phase - 1) * 0.25))
         
         self.special_cooldown = max(0, self.special_cooldown - 1)
         return max(1, damage)
+    
+    def get_attack_description(self):
+        """Description des attaques de Morgrath selon sa phase"""
+        if self.phase >= 4:
+            attacks = [
+                f"{self.name} frappe avec une fureur apocalyptique !",
+                f"{self.name} canalise l'énergie démoniaque ultime !",
+                f"{self.name} devient une tempête de destruction !"
+            ]
+        elif self.phase == 3:
+            attacks = [
+                f"{self.name} attaque avec une rage croissante !",
+                f"{self.name} libère des vagues d'énergie noire !",
+                f"{self.name} s'élève au-dessus du sol, entouré de flammes !",
+                f"{self.name} invoque le pouvoir des ombres !"
+            ]
+        elif self.phase == 2:
+            attacks = [
+                f"{self.name} frappe avec une puissance terrifiante !",
+                f"{self.name} utilise son énergie démoniaque !",
+                f"{self.name} vous regarde d'un air menaçant et attaque !",
+                f"{self.name} canalise le pouvoir des anciens !"
+            ]
+        else:
+            attacks = [
+                f"{self.name} avance vers vous, hache levée !",
+                f"{self.name} gronde d'une voix abyssale !",
+                f"{self.name} vous fixe avec ses yeux rouges enflammés !",
+                f"{self.name} commence à révéler sa véritable nature !"
+            ]
+        return random.choice(attacks)
+    
+    def get_full_info(self):
+        """Informations détaillées sur Morgrath"""
+        info = super().get_full_info()
+        info += f"\nPhase actuelle: {self.phase}/4\n"
+        info += f"Attaques spéciales: {len(self.special_attacks)}\n"
+        info += "Attaques spéciales:\n"
+        for attack in self.special_attacks:
+            info += f"  - {attack['name']}: {attack['damage']} dégâts\n"
+        return info
 
 
 # ============================================================================
@@ -580,4 +639,14 @@ class EnemyCatalog:
             elif enemy_type == "TROLL":
                 return Troll(variant)
             else:
-                return enemy_classes[
+                return enemy_classes[enemy_type]()
+        
+        return None
+    
+    @staticmethod
+    def get_enemy_info(enemy_type):
+        """Retourne les informations sur un type d'ennemi"""
+        enemy = EnemyCatalog.create_enemy(enemy_type)
+        if enemy:
+            return enemy.get_full_info()
+        return f"Ennemi '{enemy_type}' non trouvé."
