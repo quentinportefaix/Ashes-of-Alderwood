@@ -48,8 +48,6 @@ Choix narratifs mortels (sauter par la fenêtre, affronter prématurément)
 
 Votre personnage possède :
 
-6 statistiques : FOR, DEX, INT, CON, SAG, CHA
-
 Points de vie : 50 PV maximum
 
 Inventaire : Armes, armures, objets
@@ -71,16 +69,6 @@ Tour par tour avec dégâts calculés selon votre voie
 Effets spéciaux : brûlure magique, esquive, coup critique
 
 Combat contre Morgrath en deux phases avec pouvoir caché
-
-🎒 Système d'Objets
-
-Armes : 9 types disponibles (d'entraînement à légendaires)
-
-Armures : 4 types avec différents bonus
-
-Consommables : 6 potions avec divers effets
-
-Objets de quête : 7 objets clés pour l'histoire
 
 📜 Système de Quêtes
 
