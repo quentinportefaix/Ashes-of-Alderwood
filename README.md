@@ -1,16 +1,18 @@
-🗡️ L'Héritage des Cendres - Ashes of Alderwood
+# 🗡️ L'Héritage des Cendres - Ashes of Alderwood
+![WhatsApp Image 2026-01-24 at 17 50 34](https://github.com/user-attachments/assets/c2642a51-cce4-4771-a82c-37495422f9b0)
+
 
 Jeu d'aventure textuel (Text-Based RPG) développé en Python, où vous incarnez le dernier survivant du village d'Alderwood, détruit par les armées de Morgrath.
 
-📖 Guide Utilisateur
+# 📖 Guide Utilisateur
 
-🎮 Présentation du Jeu
+# 🎮 Présentation du Jeu
 
 L'Héritage des Cendres est un jeu de rôle narratif en ligne de commande se déroulant dans un univers médiéval-fantastique sombre. 
 
 Cinq ans après la destruction de votre village, votre quête de vengeance commence - mais le chemin est semé d'embûches, de choix moraux et d'alliés inattendus.
 
-🌍 Univers & Scénario
+# 🌍 Univers & Scénario
 
 Acte 1 – La Fuite : Échapper à la destruction du village en flammes
 
@@ -18,7 +20,7 @@ Acte 2 – L'Entraînement : 5 ans plus tard, choisir votre voie et vous prépar
 
 Acte 3 – La Vengeance (à venir) : Affronter Morgrath dans son antre
 
-L'histoire est portée par :
+# L'histoire est portée par :
 
 Des PNJ complexes (mentors, alliés, ennemis)
 
@@ -26,25 +28,28 @@ Un système de quêtes scénarisées
 
 Des choix de gameplay influençant les combats et l'histoire
 
-🏆 Conditions de Victoire / Défaite
+# 🏆 Conditions de Victoire / Défaite
 
-Victoire :
+# Victoire : ![WhatsApp Image 2026-01-24 at 18 29 09](https://github.com/user-attachments/assets/c7d4e8dd-0574-4d02-b131-82981b1cadab)
 
-Terminer la quête "La Chute du Roi Démon"
 
-Vaincre Morgrath dans un combat épique
+✅ Terminer la quête "La Chute du Roi Démon"
 
-Survivre aux épreuves finales
+✅ Vaincre Morgrath dans un combat épique
 
-Défaite :
+✅ Survivre aux épreuves finales
 
-Points de vie à zéro
+# Défaite :
+![WhatsApp Image 2026-01-24 at 18 29 09 (1)](https://github.com/user-attachments/assets/98c240e0-e9c2-40fd-b891-52946880a9a3)
 
-Choix narratifs mortels (sauter par la fenêtre, affronter prématurément)
 
-Échec dans les combats clés
+❌ Points de vie à zéro
 
-🧙‍♂️ Le Personnage Joueur
+❌ Choix narratifs mortels (sauter par la fenêtre, affronter prématurément)
+
+❌ Échec dans les combats clés
+
+# 🧙‍♂️ Le Personnage Joueur
 
 Votre personnage possède :
 
@@ -52,7 +57,7 @@ Points de vie : 50 PV maximum
 
 Inventaire : Armes, armures, objets
 
-Voie de combat à choisir :
+# Voie de combat à choisir :
 
 ARC → Précision et coups critiques
 
@@ -60,7 +65,7 @@ ARC → Précision et coups critiques
 
 MAGIE → Puissance et effets spéciaux
 
-⚔️ Système de Combat
+# ⚔️ Système de Combat
 
 Tour par tour avec dégâts calculés selon votre voie
 
@@ -70,7 +75,7 @@ Effets spéciaux : brûlure magique, esquive, coup critique
 
 Combat contre Morgrath en deux phases avec pouvoir caché
 
-📜 Système de Quêtes
+# 📜 Système de Quêtes
 
 5 quêtes principales avec :
 
@@ -82,9 +87,9 @@ Progression automatique d'une quête à l'autre
 
 Journal de quêtes accessible via commande
 
-⌨️ Commandes Disponibles
+# ⌨️ Commandes Disponibles
 
-Navigation
+# Navigation
 
 Commande	Alias	Description
 
@@ -94,7 +99,7 @@ back	retour	Revenir en arrière
 
 history	historique	Voir l'historique
 
-Observation
+# Observation
 
 Commande	Alias	Description
 
@@ -102,7 +107,7 @@ look	observer	Observer la pièce
 
 check	inventaire, stats	Voir inventaire/stats
 
-Interaction
+# Interaction
 
 Commande	Alias	Description
 
@@ -114,7 +119,7 @@ talk <pnj>	parler	Parler à un PNJ
 
 fight <ennemi>	combattre	Combattre un ennemi
 
-Développement
+# Développement
 
 Commande	Alias	Description
 
@@ -124,7 +129,7 @@ quests	quetes, journal	Voir les quêtes
 
 debug	-	Mode développeur
 
-Utilitaires
+# Utilitaires
 
 Commande	Alias	Description
 
@@ -132,9 +137,10 @@ help	aide	Afficher l'aide
 
 quit	quitter	Quitter le jeu
 
-Directions acceptées : N, S, E, O, PORTE, FENETRE, GAUCHE, DROITE, CONTINUER, RETOUR, FORET, ENTRAINEMENT, VENGEANCE, VALLEE, etc.
+# Directions acceptées : 
+N, S, E, O, PORTE, FENETRE, GAUCHE, DROITE, CONTINUER, RETOUR, FORET, ENTRAINEMENT, VENGEANCE, VALLEE, etc.
 
-▶️ Installation et Lancement
+# ▶️ Installation et Lancement
 Prérequis
 Python 3.7 ou supérieur
 
@@ -184,7 +190,7 @@ Combat : Affrontez les ennemis avec fight
 
 Final : Atteignez l'antre de Morgrath pour l'affrontement final
 
-👨‍💻 Guide Développeur
+# 👨‍💻 Guide Développeur
 
 📁 Structure des Fichiers
 
@@ -212,144 +218,12 @@ Ashes-of-Alderwood/
 
 └── README.md        # Documentation
 
-🧱 Architecture du Code
+# 🧱 Architecture du Code
 
 Diagramme de Classes
 
-classDiagram
-    class Game {
-        +Player player
-        +dict rooms
-        +dict commands
-        +QuestManager quest_manager
-        +bool finished
-        +int turn_count
-        +setup()
-        +play()
-        +process_command()
-        +update_game_state()
-    }
+<img width="4704" height="6133" alt="deepseek_mermaid_20260125_eb18d4" src="https://github.com/user-attachments/assets/458ad916-fbbe-44bb-ab94-5d95e01701a1" />
 
-    class Player {
-        +str name
-        +Room current_room
-        +list history
-        +dict stats
-        +int health
-        +dict inventory
-        +str chosen_path
-        +move()
-        +attack()
-        +defend()
-        +choose_path()
-    }
-
-    class Room {
-        +str name
-        +str description
-        +dict exits
-        +dict inventory
-        +dict enemies
-        +dict characters
-        +get_long_description()
-        +add_item()
-        +remove_item()
-    }
-
-    class Command {
-        +str command_word
-        +str help_string
-        +function action
-        +int number_of_parameters
-    }
-
-    class Actions {
-        +go()
-        +quit()
-        +help()
-        +fight()
-        +talk()
-        +choose()
-        +take()
-        +drop()
-    }
-
-    class Character {
-        +str name
-        +str description
-        +Room current_room
-        +list dialogue_lines
-        +str character_type
-        +get_dialogue()
-        +move()
-    }
-
-    class Enemy {
-        +str name
-        +int health
-        +int max_health
-        +int base_damage
-        +str enemy_type
-        +take_damage()
-        +calculate_damage()
-        +drop_loot()
-    }
-
-    class Item {
-        +str name
-        +str description
-        +str item_type
-        +int value
-        +float weight
-    }
-
-    class Weapon {
-        +int damage_bonus
-        +str weapon_type
-        +int magic_bonus
-        +int critical_chance
-    }
-
-    class Armor {
-        +int defense_bonus
-        +str armor_type
-        +int dodge_penalty
-        +int magic_resistance
-    }
-
-    class Quest {
-        +str quest_id
-        +str title
-        +str description
-        +list objectives
-        +dict reward
-        +start()
-        +complete_objective()
-        +complete_quest()
-    }
-
-    class QuestManager {
-        +Player player
-        +dict all_quests
-        +list active_quests
-        +list completed_quests
-        +start_quest()
-        +complete_objective()
-        +check_quest_triggers()
-    }
-
-    Game --> Player : contient
-    Game --> Room : contient
-    Game --> Command : utilise
-    Game --> QuestManager : contient
-    Player --> Room : référence
-    Player --> Item : possède
-    Room --> Character : contient
-    Room --> Enemy : contient
-    Actions --> Game : manipule
-    QuestManager --> Quest : gère
-    Weapon --|> Item : hérite
-    Armor --|> Item : hérite
 
 
 
